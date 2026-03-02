@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        :root { --sidebar-bg: linear-gradient(180deg, #6a11cb 0%, #2575fc 100%); --main-bg: #f3f4f6; }
+        :root { --sidebar-bg: linear-gradient(180deg, #140227 0%, #4888f7 100%); --main-bg: #f3f4f6; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--main-bg); overflow-x: hidden; }
         
         .sidebar { width: 250px; height: 100vh; background: var(--sidebar-bg); color: white; position: fixed; z-index: 100; }
@@ -25,10 +25,10 @@
     <div class="sidebar">
         <div class="sidebar-brand"><i class="fa-solid fa-store"></i> ShopMaster</div>
         <nav class="nav flex-column mt-4">
+
             <a href="{% url 'home' %}" class="nav-link"><i class="fa-solid fa-gauge"></i> Dashboard</a>
             <a href="{% url 'inventory' %}" class="nav-link"><i class="fa-solid fa-box"></i> Inventory</a>
             <a href="{% url 'daily_sales' %}" class="nav-link"><i class="fa-solid fa-cash-register"></i> Daily Sales</a>
-            <a href="{% url 'sales_history' %}" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Sales History</a>
             <a href="{% url 'profit_loss' %}" class="nav-link"><i class="fa-solid fa-chart-pie"></i> Profit & Loss</a>
             <a href="{% url 'expenses' %}" class="nav-link"><i class="fa-solid fa-wallet"></i> Expenses</a>
             <a href="{% url 'reports' %}" class="nav-link"><i class="fa-solid fa-file-waveform"></i> Reports & AI</a>
@@ -36,6 +36,8 @@
             
             <a href="{% url 'staff' %}" class="nav-link"><i class="fa-solid fa-id-card"></i> Staff</a>
             <a href="{% url 'suppliers' %}" class="nav-link"><i class="fa-solid fa-truck"></i> Suppliers</a>
+            
+            <a href="{% url 'invoice' %}" class="nav-link"><i class="fa-solid fa-file-invoice"></i> Invoices</a>
             
             <div class="mt-5">
                 <form action="{% url 'logout' %}" method="post" class="px-3">

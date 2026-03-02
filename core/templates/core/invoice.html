@@ -1,19 +1,62 @@
 {% extends 'core/base.html' %}
-
-{% block title %} Coming Soon {% endblock %}
-{% block page_name %} Page Under Construction {% endblock %}
+{% block title %}Invoices{% endblock %}
+{% block page_name %}Invoice Generator{% endblock %}
 
 {% block content %}
-    <div class="card p-5 text-center shadow-sm border-0" style="margin-top: 50px;">
-        <div class="mb-4">
-            <i class="fa-solid fa-person-digging fa-5x text-warning"></i>
-        </div>
-        <h2 class="text-primary fw-bold">Work in Progress 🚧</h2>
-        <p class="text-muted fs-5">This feature is being built right now.</p>
-        <div class="mt-4">
-            <a href="{% url 'home' %}" class="btn btn-outline-primary px-4 rounded-pill">
-                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-            </a>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white font-weight-bold">
+                <i class="fa-solid fa-file-invoice"></i> Create New Invoice
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted fw-bold">Select Customer</label>
+                        {{ form.customer }}
+                        <small class="text-muted d-block mt-1">Leave blank for a Walk-in Customer.</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Start Invoice</button>
+                </form>
+            </div>
         </div>
     </div>
+
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-header bg-white font-weight-bold">Recent Invoices</div>
+            <div class="card-body">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th>Total Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inv in invoices %}
+                        <tr>
+                            <td><strong>#{{ inv.id }}</strong></td>
+                            <td>{{ inv.customer.name|default:"Walk-in Customer" }}</td>
+                            <td>{{ inv.date_created|date:"M d, Y" }}</td>
+                            <td class="text-success fw-bold">₹{{ inv.total_amount }}</td>
+                            <td>
+                                <a href="{% url 'invoice_detail' inv.id %}" class="btn btn-sm btn-info text-white">
+                                    <i class="fa-solid fa-eye"></i> View / Edit
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center py-4 text-muted">No invoices created yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

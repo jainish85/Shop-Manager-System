@@ -1,19 +1,108 @@
 {% extends 'core/base.html' %}
-
-{% block title %} Coming Soon {% endblock %}
-{% block page_name %} Page Under Construction {% endblock %}
+{% block title %}Reports & AI{% endblock %}
+{% block page_name %}Reports & AI Insights{% endblock %}
 
 {% block content %}
-    <div class="card p-5 text-center shadow-sm border-0" style="margin-top: 50px;">
-        <div class="mb-4">
-            <i class="fa-solid fa-person-digging fa-5x text-warning"></i>
-        </div>
-        <h2 class="text-primary fw-bold">Work in Progress 🚧</h2>
-        <p class="text-muted fs-5">This feature is being built right now.</p>
-        <div class="mt-4">
-            <a href="{% url 'home' %}" class="btn btn-outline-primary px-4 rounded-pill">
-                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-            </a>
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow border-0 bg-primary text-white">
+            <div class="card-body text-center">
+                <h6>Total Customers</h6>
+                <h3>{{ total_customers }}</h3>
+            </div>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="card shadow border-0 bg-warning text-dark">
+            <div class="card-body text-center">
+                <h6>Total Suppliers</h6>
+                <h3>{{ total_suppliers }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow border-0 bg-info text-white">
+            <div class="card-body text-center">
+                <h6>Total Staff</h6>
+                <h3>{{ total_staff }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow border-0 bg-success text-white">
+            <div class="card-body text-center">
+                <h6>Total Payroll</h6>
+                <h3>₹{{ total_payroll|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow border-0">
+            <div class="card-header bg-white font-weight-bold">
+                <i class="fa-solid fa-chart-pie"></i> Business Overview
+            </div>
+            <div class="card-body">
+                <canvas id="businessChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow border-0" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);">
+            <div class="card-header bg-dark text-white font-weight-bold d-flex justify-content-between align-items-center">
+                <span><i class="fa-solid fa-robot text-info"></i> Smart AI Insights</span>
+                <span class="badge bg-info">Live</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">Analyzing your ShopManager database...</p>
+                <ul class="list-group list-group-flush border-0">
+                    {% for insight in ai_insights %}
+                        <li class="list-group-item bg-transparent border-bottom mb-2 px-0">
+                            {{ insight|safe }}
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item bg-transparent">Not enough data to generate insights yet. Add more records!</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('businessChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar', // You can change this to 'pie' or 'doughnut'
+            data: {
+                labels: ['Customers', 'Suppliers', 'Staff'],
+                datasets: [{
+                    label: 'Total Count',
+                    data: [{{ total_customers }}, {{ total_suppliers }}, {{ total_staff }}],
+                    backgroundColor: [
+                        'rgba(13, 110, 253, 0.7)', // Primary
+                        'rgba(255, 193, 7, 0.7)',  // Warning
+                        'rgba(13, 202, 240, 0.7)'  // Info
+                    ],
+                    borderColor: [
+                        'rgba(13, 110, 253, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        'rgba(13, 202, 240, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}
