@@ -21,7 +21,32 @@ def login_redirect_view(request):
     else:
         return redirect('home')
 
+@login_required
+def register_staff(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
 
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Username already exists")
+            return redirect('register_staff')
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password
+        )
+        user.is_staff = True
+        user.save()
+
+        messages.success(request, "Staff account created successfully!")
+        return redirect('staff')
+
+    return render(request, 'core/register.html')
 
 # --- DASHBOARD / HOME ---
 @login_required
