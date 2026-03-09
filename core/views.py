@@ -20,11 +20,13 @@ def login_redirect_view(request):
         return redirect('/admin/')
     else:
         return redirect('home')
-
+    
 @login_required
 def register_staff(request):
+
+    # Only owner access
     if not request.user.is_superuser:
-        raise PermissionDenied
+        return render(request, "core/only_owner.html")
 
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -40,6 +42,7 @@ def register_staff(request):
             email=email,
             password=password
         )
+
         user.is_staff = True
         user.save()
 
@@ -47,7 +50,6 @@ def register_staff(request):
         return redirect('staff')
 
     return render(request, 'core/register.html')
-
 # --- DASHBOARD / HOME ---
 @login_required
 def home(request):
@@ -90,7 +92,7 @@ def home(request):
 @login_required
 def daily_sales_view(request):
     if not request.user.is_superuser:
-            raise PermissionDenied
+        return render(request, "core/only_owner.html")
 
     today = timezone.now().date()
     
