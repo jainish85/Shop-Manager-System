@@ -87,10 +87,11 @@ def home(request):
     return render(request, 'core/home.html', context)
 
 
-
-# --- DAILY SALES VIEW (Updated) ---
 @login_required
 def daily_sales_view(request):
+    if not request.user.is_superuser:
+            raise PermissionDenied
+
     today = timezone.now().date()
     
     sales_today = Sale.objects.filter(sale_date__date=today).order_by('-sale_date')
@@ -104,9 +105,8 @@ def daily_sales_view(request):
         'total_items': total_items,
         'today': today,
     }
+
     return render(request, 'core/daily_sales.html', context)
-
-
 
 # --- ADD PRODUCT ---
 @login_required
