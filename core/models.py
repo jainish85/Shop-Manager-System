@@ -74,7 +74,8 @@ class Customer(models.Model):
 class Staff(models.Model):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    position = models.CharField(max_length=50, default='Salesperson') # e.g., Manager, Cleaner
+    position = models.CharField(max_length=50, default='Salesperson') 
+    email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=15)
     salary = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     date_hired = models.DateField(auto_now_add=True)
@@ -93,3 +94,27 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.company_name
+    
+    
+#8 invoice and invoice items
+class Invoice(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+
+    def __str__(self):
+
+        name = self.customer.name if self.customer else "Walk-in Customer"
+        return f"Invoice #{self.id} - {name}"
+
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2) 
+
+    def get_total(self):
+        return self.quantity * self.price
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product.name}"

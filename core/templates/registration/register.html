@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShopMaster | Log In</title>
+    <title>ShopMaster | Registration</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         
         body {
-            background-color: #f4f6f8; /* Matches dashboard background */
+            background-color: #f4f6f8; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,14 +20,13 @@
 
         .auth-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 420px; 
         }
 
-        /* ShopMaster Branding header */
         .brand-header {
             text-align: center;
             margin-bottom: 30px;
-            color: #1e1e2d; /* Matches the dark sidebar */
+            color: #1e1e2d; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -46,7 +45,7 @@
             background-color: #ffffff;
             padding: 40px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* Subtle dashboard shadow */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
 
         .form-title {
@@ -58,7 +57,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
@@ -81,7 +80,7 @@
         }
 
         .form-group input:focus {
-            border-color: #2563eb; /* Matches the vibrant blue in dashboard */
+            border-color: #2563eb;
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
             outline: none;
         }
@@ -89,7 +88,7 @@
         .btn-submit {
             width: 100%;
             padding: 12px;
-            background-color: #2563eb; /* Vibrant blue */
+            background-color: #2563eb;
             color: #ffffff;
             border: none;
             border-radius: 6px;
@@ -121,15 +120,19 @@
             text-decoration: underline; 
         }
 
+        /* Upgraded Detailed Error Box */
         .error-message {
             background: #fef2f2;
             color: #b91c1c;
-            padding: 12px;
+            padding: 15px;
             border-radius: 6px;
             font-size: 14px;
             margin-bottom: 20px;
             border: 1px solid #fecaca;
-            text-align: center;
+        }
+        .error-message ul {
+            margin-top: 5px;
+            padding-left: 20px;
         }
     </style>
 </head>
@@ -144,41 +147,51 @@
         </div>
 
         <div class="form-card">
-            <h2 class="form-title">Sign in to your dashboard</h2>
+            <h2 class="form-title">Create your account</h2>
             
-           {% if form.errors %}
-    <div class="error-message">
-        <strong>Please correct the errors below:</strong>
-        <ul style="text-align: left; margin-top: 10px; padding-left: 20px; font-size: 13px;">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                {% endfor %}
-            {% endfor %}
-            {% for error in form.non_field_errors %}
-                <li>{{ error }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endif %}
+            {% if form.errors %}
+                <div class="error-message">
+                    <strong>Please correct the errors below:</strong>
+                    <ul>
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
 
             <form method="post">
                 {% csrf_token %}
                 
                 <div class="form-group">
                     <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                    <input type="text" id="username" name="username" placeholder="Choose a username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" placeholder="name@example.com" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <input type="password" id="password" name="password1" placeholder="Create a strong password" required>
                 </div>
 
-                <button type="submit" class="btn-submit">Log In</button>
+                <div class="form-group">
+                    <label for="password_confirm">Confirm Password</label>
+                    <input type="password" id="password_confirm" name="password2" placeholder="Confirm your password" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Sign up</button>
 
                 <div class="form-footer">
-                    <p>Don't have an account? <a href="{% url 'register' %}">REGISTER</a></p>
+                    <p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
                 </div>
             </form>
         </div>

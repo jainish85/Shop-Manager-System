@@ -5,6 +5,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from core import views  # Import views from your core app
 
+
+from django.contrib import admin
+
+admin.site.site_header = "ShopMaster Administration"
+admin.site.site_title = "ShopMaster Admin Portal"
+admin.site.index_title = "Welcome to ShopMaster Database"
+
 urlpatterns = [
     # 1. Admin Panel
     path('admin/', admin.site.urls),

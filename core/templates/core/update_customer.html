@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+{% block title %}Update Customer{% endblock %}
+{% block page_name %}Update Customer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-0">
+            <div class="card-header bg-primary text-white font-weight-bold">
+                <i class="fa-solid fa-pen-to-square"></i> Edit Customer: {{ customer.name }}
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary w-50">Update</button>
+                        <a href="{% url 'customers' %}" class="btn btn-secondary w-50">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

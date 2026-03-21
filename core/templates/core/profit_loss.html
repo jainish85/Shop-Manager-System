@@ -1,24 +1,26 @@
 {% extends 'core/base.html' %}
-{% load currency_filters %}  {% block title %} Profit & Loss Report {% endblock %}
+{% load currency_filters %}  
+{% block title %} Profit & Loss Report {% endblock %}
 {% block page_name %} Profit & Loss Report {% endblock %}
 
 {% block content %}
 <style>
-    .card-stat { border: none; color: white; border-radius: 10px; }
-    .bg-revenue { background: #1abc9c; } 
-    .bg-expense { background: #e74c3c; } 
-    .bg-gross   { background: #3498db; } 
-    .bg-net     { background: #00bcd4; } 
+    .card-stat { border: none; color: white; border-radius: 12px; transition: transform 0.2s; }
+    .card-stat:hover { transform: translateY(-5px); }
+    .bg-revenue { background: linear-gradient(135deg, #1abc9c, #16a085); } 
+    .bg-expense { background: linear-gradient(135deg, #e74c3c, #c0392b); } 
+    .bg-gross   { background: linear-gradient(135deg, #3498db, #2980b9); } 
+    .bg-net     { background: linear-gradient(135deg, #00bcd4, #0097a7); } 
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid px-0">
 
     <div class="row g-4 mb-4">
         <div class="col-md-3">
             <div class="card card-stat bg-revenue p-3 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-0 fw-bold">₹{{ total_revenue|rupees }}</h3>
+                        <h3 class="mb-0 fw-bold">₹{{ total_revenue|default:0|rupees }}</h3>
                         <small class="opacity-75">Total Revenue</small>
                     </div>
                     <i class="fa-solid fa-cash-register fa-2x opacity-50"></i>
@@ -30,7 +32,7 @@
             <div class="card card-stat bg-expense p-3 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-0 fw-bold">₹{{ total_expenses|rupees }}</h3>
+                        <h3 class="mb-0 fw-bold">₹{{ total_expenses|default:0|rupees }}</h3>
                         <small class="opacity-75">Operating Expenses</small>
                     </div>
                     <i class="fa-solid fa-file-invoice-dollar fa-2x opacity-50"></i>
@@ -42,7 +44,7 @@
             <div class="card card-stat bg-gross p-3 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-0 fw-bold">₹{{ gross_profit|rupees }}</h3>
+                        <h3 class="mb-0 fw-bold">₹{{ gross_profit|default:0|rupees }}</h3>
                         <small class="opacity-75">Gross Profit</small>
                     </div>
                     <i class="fa-solid fa-coins fa-2x opacity-50"></i>
@@ -54,8 +56,8 @@
             <div class="card card-stat bg-net p-3 shadow-sm h-100">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h3 class="mb-0 fw-bold">₹{{ net_profit|rupees }}</h3>
-                        <small class="opacity-75">Net Profit ({{ profit_margin|floatformat:1 }}% Margin)</small>
+                        <h3 class="mb-0 fw-bold">₹{{ net_profit|default:0|rupees }}</h3>
+                        <small class="opacity-75">Net Profit ({{ profit_margin|default:0|floatformat:1 }}% Margin)</small>
                     </div>
                     <i class="fa-solid fa-wallet fa-2x opacity-50"></i>
                 </div>
@@ -65,7 +67,7 @@
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
-            <h5 class="card-title fw-bold text-muted mb-4">Monthly Performance ({{ current_year }})</h5>
+            <h5 class="card-title fw-bold text-dark mb-4">Monthly Performance ({{ current_year }})</h5>
             <div style="height: 350px;">
                 <canvas id="plChart"></canvas>
             </div>
@@ -73,12 +75,12 @@
     </div>
 
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">
-            <h6 class="mb-0 fw-bold">Monthly Breakdown</h6>
+        <div class="card-header bg-white py-3 border-bottom-0">
+            <h6 class="mb-0 fw-bold text-dark">Monthly Breakdown</h6>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr>
                         <th class="ps-4">Period</th>
                         <th>Revenue</th>
@@ -91,19 +93,24 @@
                 <tbody>
                     {% for row in monthly_report %}
                     <tr>
-                        <td class="ps-4 fw-bold">{{ row.month }} {{ current_year }}</td>
+                        <td class="ps-4 fw-bold text-dark">
+                            {% if row.month == "Nan" %} Unknown {% else %} {{ row.month }} {% endif %} {{ current_year }}
+                        </td>
                         
-                        <td>₹{{ row.revenue|rupees }}</td>
-                        <td class="text-secondary">₹{{ row.cogs|rupees }}</td>
-                        <td class="text-primary fw-bold">₹{{ row.gross_profit|rupees }}</td>
-                        <td class="text-danger">₹{{ row.expenses|rupees }}</td>
+                        <td>₹{{ row.revenue|default:0|rupees }}</td>
+                        <td class="text-secondary">₹{{ row.cogs|default:0|rupees }}</td>
+                        <td class="text-primary fw-bold">₹{{ row.gross_profit|default:0|rupees }}</td>
+                        <td class="text-danger">₹{{ row.expenses|default:0|rupees }}</td>
                         <td class="text-end pe-4 fw-bold {% if row.net_profit >= 0 %}text-success{% else %}text-danger{% endif %}">
-                            ₹{{ row.net_profit|rupees }}
+                            ₹{{ row.net_profit|default:0|rupees }}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">No data available for this year yet.</td>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-folder-open fa-2x mb-2 opacity-50"></i><br>
+                            No data available for this year yet.
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -115,31 +122,45 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('plChart').getContext('2d');
-    
-    const labels = [{% for row in monthly_report %}"{{ row.month }}",{% endfor %}];
-    const revenueData = [{% for row in monthly_report %}{{ row.revenue }},{% endfor %}];
-    const expenseData = [{% for row in monthly_report %}{{ row.expenses }},{% endfor %}];
-    const profitData = [{% for row in monthly_report %}{{ row.net_profit }},{% endfor %}];
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('plChart').getContext('2d');
+        
+        // Using safe default fallbacks for Javascript arrays
+        const labels = [{% for row in monthly_report %}"{{ row.month }}",{% endfor %}];
+        const revenueData = [{% for row in monthly_report %}{{ row.revenue|default:0 }},{% endfor %}];
+        const expenseData = [{% for row in monthly_report %}{{ row.expenses|default:0 }},{% endfor %}];
+        const profitData = [{% for row in monthly_report %}{{ row.net_profit|default:0 }},{% endfor %}];
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Revenue', data: revenueData, backgroundColor: '#1abc9c', borderRadius: 4 },
-                { label: 'Expenses', data: expenseData, backgroundColor: '#e74c3c', borderRadius: 4 },
-                { label: 'Net Profit', data: profitData, backgroundColor: '#3498db', borderRadius: 4 }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, grid: { borderDash: [2, 2] } },
-                x: { grid: { display: false } }
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Revenue', data: revenueData, backgroundColor: '#1abc9c', borderRadius: 4, barPercentage: 0.6 },
+                    { label: 'Expenses', data: expenseData, backgroundColor: '#e74c3c', borderRadius: 4, barPercentage: 0.6 },
+                    { label: 'Net Profit', data: profitData, backgroundColor: '#3498db', borderRadius: 4, barPercentage: 0.6 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        grid: { borderDash: [2, 2], color: "rgba(0,0,0,0.05)" } 
+                    },
+                    x: { 
+                        grid: { display: false } 
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { usePointStyle: true, boxWidth: 8 }
+                    }
+                }
             }
-        }
+        });
     });
 </script>
 {% endblock %}
