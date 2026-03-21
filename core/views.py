@@ -5,17 +5,12 @@ from django.utils import timezone
 from django.db.models import Sum, Count, F, Q
 from django.db.models.functions import TruncDay, TruncMonth
 
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import login
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
-from .models import Product, Category, Sale, Expense ,Customer ,Staff ,Supplier ,Invoice ,InvoiceItem
-from .forms import ProductForm, CategoryForm, SaleForm, ExpenseForm ,CustomerForm ,StaffForm ,SupplierForm ,InvoiceForm, InvoiceItemForm
-
-
+from .models import Product, Category, Sale, Expense ,Customer ,Staff ,Supplier
+from .forms import ProductForm, CategoryForm, SaleForm, ExpenseForm ,CustomerForm ,StaffForm ,SupplierForm
 
 # --- TRAFFIC CONTROLLER ---
 def login_redirect_view(request):
@@ -23,8 +18,6 @@ def login_redirect_view(request):
         return redirect('/admin/')
     else:
         return redirect('home')
-
-
 
 # --- DASHBOARD / HOME ---
 @login_required
@@ -64,11 +57,12 @@ def home(request):
     }
     return render(request, 'core/home.html', context)
 
-
-
 # --- DAILY SALES VIEW (Updated) ---
 @login_required
 def daily_sales_view(request):
+    if not request.user.is_superuser:
+        return render(request, "core/only_owner.html")
+
     today = timezone.now().date()
     
     sales_today = Sale.objects.filter(sale_date__date=today).order_by('-sale_date')
@@ -82,6 +76,7 @@ def daily_sales_view(request):
         'total_items': total_items,
         'today': today,
     }
+
     return render(request, 'core/daily_sales.html', context)
 
 
@@ -359,30 +354,6 @@ def staff_view(request):
     return render(request, 'core/staff.html', {'form': form, 'staff_list': staff_list})
 
 @login_required
-def update_staff(request, pk):
-    staff = get_object_or_404(Staff, pk=pk)
-    if request.method == 'POST':
-        form = StaffForm(request.POST, instance=staff)
-        if form.is_valid():
-            form.save()
-            messages.success(request, f"Staff member updated successfully!")
-            return redirect('staff') 
-    else:
-        form = StaffForm(instance=staff)
-    return render(request, 'core/update_staff.html', {'form': form, 'staff': staff})
-
-@login_required
-def delete_staff(request, pk):
-    staff = get_object_or_404(Staff, pk=pk)
-    if request.method == 'POST':
-        staff.delete()
-        messages.success(request, "Staff member deleted successfully!")
-    return redirect('staff')
-
-
-
-#spplier views page
-@login_required
 def suppliers_view(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -547,73 +518,4 @@ def calculate_future_projections(data_list, periods=3):
 
 # --- UPDATE YOUR VIEW ---
 @login_required
-def ai_forecast_view(request):
-    # Let's get the last 6 months of data
-    today = timezone.now().date()
-    
-    historical_revenue = []
-    historical_expenses = []
-    future_months = []
-    
-    # 1. Gather the last 6 months of data from your database
-    for i in range(5, -1, -1):
-        target_date = today - timedelta(days=30*i)
-        
-        monthly_sales = Sale.objects.filter(sale_date__year=target_date.year, sale_date__month=target_date.month)
-        rev = monthly_sales.aggregate(Sum('total_price'))['total_price__sum'] or 0
-        
-        monthly_exp = Expense.objects.filter(date_added__year=target_date.year, date_added__month=target_date.month)
-        exp = monthly_exp.aggregate(Sum('amount'))['amount__sum'] or 0
-        
-        historical_revenue.append(float(rev))
-        historical_expenses.append(float(exp))
-
-    # 2. Feed data into our Prediction Engine!
-    predicted_revenue = calculate_future_projections(historical_revenue, periods=3)
-    predicted_expenses = calculate_future_projections(historical_expenses, periods=3)
-    
-    # Calculate predicted Net Profit
-    predicted_net_profit = [round(rev - exp, 2) for rev, exp in zip(predicted_revenue, predicted_expenses)]
-
-    # 3. Get the names of the next 3 months for the chart (e.g., "Apr", "May", "Jun")
-    for i in range(1, 4):
-        next_month = (today.replace(day=1) + timedelta(days=32*i)).replace(day=1)
-        future_months.append(calendar.month_abbr[next_month.month])
-
-    context = {
-        'future_months': future_months,
-        'predicted_revenue': predicted_revenue,
-        'predicted_expenses': predicted_expenses,
-        'predicted_net_profit': predicted_net_profit,
-        
-        'next_month_revenue': predicted_revenue[0] if predicted_revenue else 0,
-        'next_month_profit': predicted_net_profit[0] if predicted_net_profit else 0,
-    }
-    
-    return render(request, 'core/predictions.html', context)
-
-
-
-# --- USER REGISTRATION VIEW ---
-def register_page(request):
-    # If they are already logged in, send them to the dashboard
-    if request.user.is_authenticated:
-        return redirect('home')
-
-    # If they are submitting the registration form
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            # TWEAK: Pause before fully saving to add the email manually
-            user = form.save(commit=False)
-            user.email = request.POST.get('email')
-            user.save() 
-            
-            login(request, user)  # Auto-login after creating account
-            messages.success(request, f"Welcome to ShopMaster, {user.username}!")
-            return redirect('home')
-    # If they are just loading the page for the first time
-    else:
-        form = UserCreationForm()
-        
-    return render(request, 'registration/register.html', {'form': form})
+def invoice_view(request): return render(request, 'core/invoice.html')
