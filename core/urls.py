@@ -6,7 +6,9 @@ urlpatterns = [
     path('', views.home, name='index'),
     path('home/', views.home, name='home'),
     
-path('register-staff/', views.register_staff, name='register_staff'),
+      path('register-staff/', views.register_staff, name='register_staff'),
+      path('accounts/register/', views.register_user, name='register'),
+      
     # Inventory & Products
     path('inventory/', views.inventory_view, name='inventory'),
     path('add-product/', views.add_product, name='add_product'),
@@ -31,9 +33,24 @@ path('register-staff/', views.register_staff, name='register_staff'),
 
     # Others
     path('profile/', views.profile, name='profile'),
-    path('reports/', views.reports_view, name='reports'),
-    path('customers/', views.customers_view, name='customers'),
-    path('staff/', views.staff_view, name='staff'),
-    path('suppliers/', views.suppliers_view, name='suppliers'),
+    path('reports/', views.reports_view, name='reports'),  
+    #invoice
     path('invoice/', views.invoice_view, name='invoice'),
+    path('invoice/<int:pk>/', views.invoice_detail, name='invoice_detail'),
+
+
+    #suppliers
+    path('suppliers/', views.suppliers_view, name='suppliers'),
+    path('suppliers/update/<int:pk>/', views.update_supplier, name='update_supplier'),
+    path('suppliers/delete/<int:pk>/', views.delete_supplier, name='delete_supplier'),
+
+    #stff
+    path('staff/', views.staff_view, name='staff'),
+    path('staff/update/<int:pk>/', views.update_staff, name='update_staff'),
+    path('staff/delete/<int:pk>/', views.delete_staff, name='delete_staff'),
+
+    #customers
+    path('customers/', views.customers_view, name='customers'),
+    path('customers/update/<int:pk>/', views.update_customer, name='update_customer'),
+    path('customers/delete/<int:pk>/', views.delete_customer, name='delete_customer'), 
 ]

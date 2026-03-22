@@ -5,12 +5,17 @@ from django.utils import timezone
 from django.db.models import Sum, Count, F, Q
 from django.db.models.functions import TruncDay, TruncMonth
 
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.contrib import messages
-from .models import Product, Category, Sale, Expense ,Customer ,Staff ,Supplier
-from .forms import ProductForm, CategoryForm, SaleForm, ExpenseForm ,CustomerForm ,StaffForm ,SupplierForm
+
+from .models import Product, Category, Sale, Expense, Customer, Staff, Supplier, Invoice, InvoiceItem
+from .forms import ProductForm, CategoryForm, SaleForm, ExpenseForm, CustomerForm, StaffForm, SupplierForm, InvoiceForm, InvoiceItemForm
+
 
 # --- TRAFFIC CONTROLLER ---
 def login_redirect_view(request):
@@ -18,6 +23,8 @@ def login_redirect_view(request):
         return redirect('/admin/')
     else:
         return redirect('home')
+
+
 
 # --- DASHBOARD / HOME ---
 @login_required
@@ -57,14 +64,16 @@ def home(request):
     }
     return render(request, 'core/home.html', context)
 
-# --- DAILY SALES VIEW (Updated) ---
+
+
+
+# --- DAILY SALES VIEW ---
 @login_required
 def daily_sales_view(request):
     if not request.user.is_superuser:
         return render(request, "core/only_owner.html")
 
     today = timezone.now().date()
-    
     sales_today = Sale.objects.filter(sale_date__date=today).order_by('-sale_date')
     
     total_revenue = sales_today.aggregate(Sum('total_price'))['total_price__sum'] or 0
@@ -76,8 +85,8 @@ def daily_sales_view(request):
         'total_items': total_items,
         'today': today,
     }
-
     return render(request, 'core/daily_sales.html', context)
+
 
 
 
@@ -155,6 +164,7 @@ def delete_category(request, pk):
 
 
 
+
 # --- SELL PRODUCT ---
 @login_required
 def sell_product(request, pk):
@@ -174,12 +184,13 @@ def sell_product(request, pk):
                 sale.save()
                 
                 messages.success(request, f"Sold {quantity_sold} of {product.name}!")
-                return redirect('daily_sales') # Updated redirect
+                return redirect('daily_sales')
             else:
                 messages.error(request, "Not enough stock!")
     else:
         form = SaleForm()
     return render(request, 'core/sell_product.html', {'product': product, 'form': form})
+
 
 
 
@@ -192,7 +203,6 @@ def inventory_view(request):
     else:
         products = Product.objects.all()
     return render(request, 'core/inventory.html', {'products': products})
-
 
 
 
@@ -209,17 +219,14 @@ def profit_loss_view(request):
     
     for m in range(1, 13):
         if m > today.month: 
-            break # Don't show future months
+            break
         
-        # Superpower added here: select_related('product') makes this lightning fast!
         monthly_sales = Sale.objects.filter(
             sale_date__year=current_year, 
             sale_date__month=m
         ).select_related('product')
         
         revenue = monthly_sales.aggregate(Sum('total_price'))['total_price__sum'] or 0
-        
-        # Calculate COGS
         cogs = sum((s.product.cost_price * s.quantity) for s in monthly_sales if s.product)
         
         monthly_expenses = Expense.objects.filter(
@@ -263,7 +270,6 @@ def profit_loss_view(request):
 
 
 
-
 # --- EXPENSES VIEW ---
 @login_required
 def expenses_view(request):
@@ -286,6 +292,8 @@ def delete_expense(request, pk):
     return redirect('expenses')
 
 
+
+
 # --- PLACEHOLDERS ---
 @login_required
 def product_detail(request, pk):
@@ -296,10 +304,12 @@ def product_detail(request, pk):
 def profile(request):
     return render(request, 'core/profile.html')
 
-@login_required
-def reports_view(request): return render(request, 'core/reports.html')
+# (Deleted the empty reports_view placeholder from here!)
 
 
+
+
+# --- CUSTOMERS ---
 @login_required
 def customers_view(request):
     if request.method == 'POST':
@@ -338,7 +348,8 @@ def update_customer(request, pk):
 
 
 
-#staf views page
+
+# --- STAFF VIEWS ---
 @login_required
 def staff_view(request):
     if request.method == 'POST':
@@ -354,6 +365,51 @@ def staff_view(request):
     return render(request, 'core/staff.html', {'form': form, 'staff_list': staff_list})
 
 @login_required
+def register_staff(request):
+    if request.method == 'POST':
+        form = StaffForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Staff member added successfully!')
+            return redirect('staff') 
+    else:
+        form = StaffForm()
+    return render(request, 'core/update_staff.html', {'form': form})
+@login_required
+def update_staff(request, pk):
+    staff_member = get_object_or_404(Staff, pk=pk)
+    
+    if request.method == 'POST':
+        form = StaffForm(request.POST, instance=staff_member)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Staff '{staff_member.first_name}' updated successfully!")
+            return redirect('staff')
+    else:
+        form = StaffForm(instance=staff_member)
+        
+    return render(request, 'core/update_staff.html', {'form': form, 'staff_member': staff_member})
+
+@login_required
+def delete_staff(request, pk):
+    staff_member = get_object_or_404(Staff, pk=pk)
+    
+    if request.method == 'POST': # If using a modal form submission
+        staff_name = f"{staff_member.first_name} {staff_member.last_name}"
+        staff_member.delete()
+        messages.success(request, f"Staff '{staff_name}' deleted successfully!")
+        
+    # Also handle standard link deletion just in case
+    elif request.method == 'GET':
+        staff_member.delete()
+        messages.success(request, "Staff member deleted successfully!")
+        
+    return redirect('staff')
+
+
+
+# --- SUPPLIERS ---
+@login_required
 def suppliers_view(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -368,17 +424,6 @@ def suppliers_view(request):
     return render(request, 'core/suppliers.html', {'form': form, 'suppliers': suppliers})
 
 @login_required
-def delete_supplier(request, pk):
-    supplier = get_object_or_404(Supplier, pk=pk)
-    
-    if request.method == 'POST':
-        supplier_name = supplier.company_name 
-        supplier.delete()
-        messages.success(request, f"Supplier '{supplier_name}' deleted successfully!")
-        
-    return redirect('suppliers')
-
-@login_required
 def update_supplier(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     
@@ -387,15 +432,30 @@ def update_supplier(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, f"Supplier '{supplier.company_name}' updated successfully!")
-            return redirect('suppliers')
+            return redirect('suppliers') # Make sure 'suppliers' matches your list view URL name
     else:
         form = SupplierForm(instance=supplier)
         
     return render(request, 'core/update_supplier.html', {'form': form, 'supplier': supplier})
 
+@login_required
+def delete_supplier(request, pk):
+    supplier = get_object_or_404(Supplier, pk=pk)
+    
+    if request.method == 'POST':
+        supplier_name = supplier.company_name
+        supplier.delete()
+        messages.success(request, f"Supplier '{supplier_name}' deleted successfully!")
+        
+    elif request.method == 'GET':
+        supplier.delete()
+        messages.success(request, "Supplier deleted successfully!")
+        
+    return redirect('suppliers')
 
 
-#invoice view
+
+# --- INVOICE VIEW ---
 @login_required
 def invoice_view(request):
     if request.method == 'POST':
@@ -439,11 +499,9 @@ def invoice_detail(request, pk):
     return render(request, 'core/invoice_detail.html', {'invoice': invoice, 'form': form})
 
 
-
-# Reports & AI
-
+# --- REPORTS & AI ---
 @login_required
-def reports_and_ai(request):
+def reports_view(request):   
     total_customers = Customer.objects.count()
     total_suppliers = Supplier.objects.count()
     total_staff = Staff.objects.count()
@@ -475,23 +533,17 @@ def reports_and_ai(request):
 
 
 
+
 # --- THE AI MATH ENGINE ---
 def calculate_future_projections(data_list, periods=3):
-    """
-    Takes a list of historical numbers (like past 6 months revenue) 
-    and predicts the next 'periods' months using WMA + Growth Rate.
-    """
     if len(data_list) < 2:
-        return [0] * periods # Not enough data to predict
+        return [0] * periods 
 
-    # 1. Calculate Weighted Moving Average (WMA)
-    # Give higher weight to recent months [1, 2, 3, 4, 5, 6]
     weights = list(range(1, len(data_list) + 1)) 
     weight_sum = sum(weights)
     
     wma = sum(data * weight for data, weight in zip(data_list, weights)) / weight_sum
 
-    # 2. Calculate Average Month-over-Month Growth Rate
     growth_rates = []
     for i in range(1, len(data_list)):
         prev = data_list[i-1]
@@ -502,9 +554,6 @@ def calculate_future_projections(data_list, periods=3):
             growth_rates.append(0)
             
     avg_growth = sum(growth_rates) / len(growth_rates) if growth_rates else 0
-    
-    # Cap growth at realistically safe boundaries (e.g., max +/- 15% per month)
-    # We don't want the AI promising you a trillion dollars next year!
     avg_growth = max(min(avg_growth, 0.15), -0.15) 
 
     forecast = []
@@ -516,6 +565,36 @@ def calculate_future_projections(data_list, periods=3):
 
     return forecast
 
-# --- UPDATE YOUR VIEW ---
+# --- SALES HISTORY VIEW ---
 @login_required
-def invoice_view(request): return render(request, 'core/invoice.html')
+def sales_history(request):
+    if not request.user.is_superuser:
+        return render(request, "core/only_owner.html")
+
+    all_sales = Sale.objects.all().order_by('-sale_date')
+    
+    total_revenue = all_sales.aggregate(Sum('total_price'))['total_price__sum'] or 0
+    total_items = all_sales.aggregate(Sum('quantity'))['quantity__sum'] or 0
+
+    context = {
+        'sales': all_sales,
+        'total_revenue': total_revenue,
+        'total_items': total_items,
+    }
+    return render(request, 'core/sales_history.html', context)
+
+
+
+def register_user(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Automatically log the user in after registration
+            messages.success(request, "Registration successful! Welcome to ShopMaster.")
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+    

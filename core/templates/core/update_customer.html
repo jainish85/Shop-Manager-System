@@ -4,18 +4,22 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow border-0">
-            <div class="card-header bg-primary text-white font-weight-bold">
+    <div class="col-md-6 mt-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white fw-bold">
                 <i class="fa-solid fa-pen-to-square"></i> Edit Customer: {{ customer.name }}
             </div>
-            <div class="card-body">
+            <div class="card-body bg-light p-4">
                 <form method="POST">
                     {% csrf_token %}
                     {{ form.as_p }}
-                    <div class="d-flex gap-2 mt-3">
-                        <button type="submit" class="btn btn-primary w-50">Update</button>
-                        <a href="{% url 'customers' %}" class="btn btn-secondary w-50">Cancel</a>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary w-50 fw-bold">
+                            <i class="fa-solid fa-check"></i> Update
+                        </button>
+                        <a href="{% url 'customers' %}" class="btn btn-secondary w-50 fw-bold">
+                            Cancel
+                        </a>
                     </div>
                 </form>
             </div>

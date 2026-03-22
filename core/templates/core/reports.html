@@ -1,72 +1,125 @@
 {% extends 'core/base.html' %}
-{% block title %}Reports & AI{% endblock %}
+{% block title %}Reports & AI Insights{% endblock %}
 {% block page_name %}Reports & AI Insights{% endblock %}
 
 {% block content %}
+<style>
+    /* Custom subtle styling for a premium look */
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+    .insight-card {
+        border-left: 4px solid #0dcaf0;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+</style>
+
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card shadow border-0 bg-primary text-white">
-            <div class="card-body text-center">
-                <h6>Total Customers</h6>
-                <h3>{{ total_customers }}</h3>
+    <div class="col-xl-3 col-md-6 mb-3 mb-xl-0">
+        <div class="card shadow-sm border-0 h-100 rounded-3">
+            <div class="card-body d-flex align-items-center px-4 py-3">
+                <div class="icon-circle bg-primary bg-opacity-10 text-primary me-3">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Customers</h6>
+                    <h3 class="mb-0 fw-bold text-dark">{{ total_customers|default:"0" }}</h3>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow border-0 bg-warning text-dark">
-            <div class="card-body text-center">
-                <h6>Total Suppliers</h6>
-                <h3>{{ total_suppliers }}</h3>
+    
+    <div class="col-xl-3 col-md-6 mb-3 mb-xl-0">
+        <div class="card shadow-sm border-0 h-100 rounded-3">
+            <div class="card-body d-flex align-items-center px-4 py-3">
+                <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Suppliers</h6>
+                    <h3 class="mb-0 fw-bold text-dark">{{ total_suppliers|default:"0" }}</h3>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow border-0 bg-info text-white">
-            <div class="card-body text-center">
-                <h6>Total Staff</h6>
-                <h3>{{ total_staff }}</h3>
+    
+    <div class="col-xl-3 col-md-6 mb-3 mb-xl-0">
+        <div class="card shadow-sm border-0 h-100 rounded-3">
+            <div class="card-body d-flex align-items-center px-4 py-3">
+                <div class="icon-circle bg-info bg-opacity-10 text-info me-3">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Staff</h6>
+                    <h3 class="mb-0 fw-bold text-dark">{{ total_staff|default:"0" }}</h3>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card shadow border-0 bg-success text-white">
-            <div class="card-body text-center">
-                <h6>Total Payroll</h6>
-                <h3>₹{{ total_payroll|floatformat:2 }}</h3>
+    
+    <div class="col-xl-3 col-md-6 mb-3 mb-xl-0">
+        <div class="card shadow-sm border-0 h-100 rounded-3">
+            <div class="card-body d-flex align-items-center px-4 py-3">
+                <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
+                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted text-uppercase fw-semibold mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Payroll</h6>
+                    <h3 class="mb-0 fw-bold text-dark">₹ {{ total_payroll|default:"0"|floatformat:2 }}</h3>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-7">
-        <div class="card shadow border-0">
-            <div class="card-header bg-white font-weight-bold">
-                <i class="fa-solid fa-chart-pie"></i> Business Overview
+    <div class="col-lg-7 mb-4 mb-lg-0">
+        <div class="card shadow-sm border-0 h-100 rounded-3">
+            <div class="card-header bg-white border-0 pt-4 pb-0 px-4">
+                <h6 class="fw-bold text-dark mb-0">
+                    <i class="fa-solid fa-chart-pie text-primary me-2"></i> Business Overview
+                </h6>
             </div>
-            <div class="card-body">
-                <canvas id="businessChart" height="100"></canvas>
+            <div class="card-body px-4 pb-4">
+                <div style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="businessChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-5">
-        <div class="card shadow border-0" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);">
-            <div class="card-header bg-dark text-white font-weight-bold d-flex justify-content-between align-items-center">
-                <span><i class="fa-solid fa-robot text-info"></i> Smart AI Insights</span>
-                <span class="badge bg-info">Live</span>
+    <div class="col-lg-5">
+        <div class="card shadow-sm border-0 h-100 rounded-3">
+            <div class="card-header bg-white border-bottom pt-4 pb-3 px-4 d-flex justify-content-between align-items-center">
+                <h6 class="fw-bold text-dark mb-0">
+                    <i class="fa-solid fa-robot text-info me-2"></i> Smart AI Insights
+                </h6>
+                <span class="badge bg-info bg-opacity-10 text-info border border-info px-2 py-1 rounded-pill" style="font-size: 0.7rem;">Live Analysis</span>
             </div>
-            <div class="card-body">
-                <p class="text-muted small mb-3">Analyzing your ShopManager database...</p>
-                <ul class="list-group list-group-flush border-0">
+            <div class="card-body px-4 py-4">
+                <p class="text-muted small mb-4"><i class="fa-solid fa-magnifying-glass-chart me-1"></i> Scanning your ShopManager database...</p>
+                
+                <div class="insights-container">
                     {% for insight in ai_insights %}
-                        <li class="list-group-item bg-transparent border-bottom mb-2 px-0">
-                            {{ insight|safe }}
-                        </li>
+                        <div class="insight-card p-3 mb-3 shadow-sm ai-text">
+                            <div class="d-flex align-items-start">
+                                <span class="text-dark" style="font-size: 0.9rem; line-height: 1.5;">{{ insight|safe }}</span>
+                            </div>
+                        </div>
                     {% empty %}
-                        <li class="list-group-item bg-transparent">Not enough data to generate insights yet. Add more records!</li>
+                        <div class="text-center py-5 text-muted">
+                            <i class="fa-solid fa-folder-open fa-3x mb-3 opacity-25"></i>
+                            <p class="mb-0">Not enough data to generate insights yet.<br>Add more records to unlock AI tips!</p>
+                        </div>
                     {% endfor %}
-                </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -75,31 +128,61 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Format the AI text (converts Python **text** to HTML bold)
+        const aiElements = document.querySelectorAll('.ai-text span');
+        aiElements.forEach(el => {
+            let text = el.innerHTML;
+            // Replace **text** with <strong>text</strong>
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-dark">$1</strong>');
+            el.innerHTML = text;
+        });
+
         const ctx = document.getElementById('businessChart').getContext('2d');
+        
+        const customerCount = {{ total_customers|default:0 }};
+        const supplierCount = {{ total_suppliers|default:0 }};
+        const staffCount = {{ total_staff|default:0 }};
+
         new Chart(ctx, {
-            type: 'bar', // You can change this to 'pie' or 'doughnut'
+            type: 'bar',
             data: {
                 labels: ['Customers', 'Suppliers', 'Staff'],
                 datasets: [{
                     label: 'Total Count',
-                    data: [{{ total_customers }}, {{ total_suppliers }}, {{ total_staff }}],
+                    data: [customerCount, supplierCount, staffCount],
                     backgroundColor: [
-                        'rgba(13, 110, 253, 0.7)', // Primary
-                        'rgba(255, 193, 7, 0.7)',  // Warning
-                        'rgba(13, 202, 240, 0.7)'  // Info
+                        'rgba(13, 110, 253, 0.85)', // Primary
+                        'rgba(255, 193, 7, 0.85)',  // Warning
+                        'rgba(13, 202, 240, 0.85)'  // Info
                     ],
-                    borderColor: [
-                        'rgba(13, 110, 253, 1)',
-                        'rgba(255, 193, 7, 1)',
-                        'rgba(13, 202, 240, 1)'
-                    ],
-                    borderWidth: 1
+                    borderRadius: 6, // Rounds the top of the bars!
+                    borderSkipped: false,
+                    barThickness: 45 // Makes bars much sleeker instead of giant blocks
                 }]
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        padding: 12,
+                        titleFont: { size: 13 },
+                        bodyFont: { size: 14, weight: 'bold' },
+                        displayColors: false
+                    }
+                },
                 scales: {
-                    y: { beginAtZero: true }
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, color: '#6c757d' },
+                        grid: { borderDash: [5, 5], color: '#e9ecef', drawBorder: false }
+                    },
+                    x: {
+                        ticks: { color: '#495057', font: { weight: '500' } },
+                        grid: { display: false, drawBorder: false }
+                    }
                 }
             }
         });
